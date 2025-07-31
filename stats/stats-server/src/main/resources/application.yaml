@@ -9,8 +9,8 @@ spring:
       retry:
         useRandomPolicy: true
         max-interval: 6000
-        discovery:
-          enable: true
+      discovery:
+          enabled: true
           serviceId: config-server
 
 eureka:

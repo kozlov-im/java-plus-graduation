@@ -51,4 +51,9 @@ public class StatController {
         log.info("/GET запрос на получение статистики");
         return service.getStats(start, end, uris, unique);
     }
+
+    @GetMapping("/test")
+    public String test() {
+        return "stats-server test";
+    }
 }

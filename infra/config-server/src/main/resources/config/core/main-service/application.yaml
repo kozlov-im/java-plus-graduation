@@ -35,4 +35,7 @@ logging:
     org.springframework.web.client.RestTemplate: DEBUG
 
 server:
-  port: 8080
+  port: 0
+
+client:
+  url: http://localhost:9090

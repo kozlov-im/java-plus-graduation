@@ -16,8 +16,8 @@ import java.util.List;
 public class StatClient {
     private final RestClient restClient;
 
-    public StatClient() {
-        String clientUrl = "http://localhost:9090";
+    public StatClient(String clientUrl) {
+        //String clientUrl = "http://localhost:9090";
         this.restClient = RestClient.builder().baseUrl(clientUrl).build();
     }
 

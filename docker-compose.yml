@@ -1,4 +1,58 @@
 services:
+  discovery-server:
+    build: infra/discovery-server
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    networks:
+      - ewm-net
+    healthcheck:
+      test:
+        curl --fail --silent discovery-server:8761/actuator/health | grep UP || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+
+  config-server:
+    build: infra/config-server
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - ewm-net
+    environment:
+      #- EUREKA_INSTANCE_HOSTNAME=host.docker.internal
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      #- SERVER_PORT=8888
+      #- EUREKA_CLIENT_SERVICEURL_DEFAULTZONE= http://discovery-server:8761/eureka/ # Использование имени сервиса Docker Compose
+      #- EUREKA_INSTANCE_HOSTNAME= host.docker.internal # Регистрация в Eureka под этим именем
+      #- EUREKA_INSTANCE_PREFER_IP_ADDRESS= true # Или false, зависит от ваших предпочтений
+    healthcheck:
+      test:
+        curl --fail --silent config-server:8888/actuator/health | grep UP || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  gateway-server:
+    build: infra/gateway-server
+    container_name: gateway-server
+    ports:
+      - "8080:8080"
+    #depends_on:
+    #  config-server:
+    #    condition: service_healthy
+    networks:
+      - ewm-net
+    environment:
+      - CONFIG_SERVER_URI=config-server:8888
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+
+
   stats-server:
     build: stats/stats-server
     container_name: stats-server
@@ -52,3 +106,7 @@ services:
       timeout: 5s
       interval: 5s
       retries: 10
+
+networks:
+  ewm-net:
+    driver: bridge
