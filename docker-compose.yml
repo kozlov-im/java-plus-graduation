@@ -5,7 +5,7 @@ services:
     ports:
       - "8761:8761"
     networks:
-      - ewm-net
+      - ewm-network
     healthcheck:
       test:
         curl --fail --silent discovery-server:8761/actuator/health | grep UP || exit 1
@@ -23,14 +23,10 @@ services:
       discovery-server:
         condition: service_healthy
     networks:
-      - ewm-net
+      - ewm-network
     environment:
-      #- EUREKA_INSTANCE_HOSTNAME=host.docker.internal
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
-      #- SERVER_PORT=8888
-      #- EUREKA_CLIENT_SERVICEURL_DEFAULTZONE= http://discovery-server:8761/eureka/ # Использование имени сервиса Docker Compose
-      #- EUREKA_INSTANCE_HOSTNAME= host.docker.internal # Регистрация в Eureka под этим именем
-      #- EUREKA_INSTANCE_PREFER_IP_ADDRESS= true # Или false, зависит от ваших предпочтений
+      - SERVER_PORT=8888
     healthcheck:
       test:
         curl --fail --silent config-server:8888/actuator/health | grep UP || exit 1
@@ -43,25 +39,37 @@ services:
     container_name: gateway-server
     ports:
       - "8080:8080"
-    #depends_on:
-    #  config-server:
-    #    condition: service_healthy
+    depends_on:
+      config-server:
+        condition: service_healthy
     networks:
-      - ewm-net
+      - ewm-network
     environment:
-      - CONFIG_SERVER_URI=config-server:8888
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
-
 
   stats-server:
     build: stats/stats-server
     container_name: stats-server
     ports:
       - "9090:9090"
+    depends_on:
+      stats-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    networks:
+      - ewm-network
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewm-stats
       - SPRING_DATASOURCE_USERNAME=stat
       - SPRING_DATASOURCE_PASSWORD=stat
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+    healthcheck:
+      test:
+        curl --fail --silent config-server:8888/actuator/health | grep UP || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   stats-db:
     image: postgres:16.1
@@ -72,6 +80,8 @@ services:
       - POSTGRES_DB=ewm-stats
       - POSTGRES_USER=stat
       - POSTGRES_PASSWORD=stat
+    networks:
+      - ewm-network
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
@@ -79,24 +89,32 @@ services:
       retries: 10
 
   ewm-service:
-    build: main-service
+    build: core/main-service
     container_name: ewm-server
-    ports:
-      - "8080:8080"
     depends_on:
-      - ewm-db
-      - stats-server
+      ewm-db:
+        condition: service_healthy
+      stats-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    networks:
+      - ewm-network
     environment:
       - CLIENT_URL=http://stats-server:9090
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm-main
       - SPRING_DATASOURCE_USERNAME=main
       - SPRING_DATASOURCE_PASSWORD=main
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - SERVER_PORT=8081
 
   ewm-db:
     image: postgres:16.1
     container_name: postgres-ewm-main-db
     ports:
       - "7432:5432"
+    networks:
+      - ewm-network
     environment:
       - POSTGRES_DB=ewm-main
       - POSTGRES_USER=main
@@ -108,5 +126,5 @@ services:
       retries: 10
 
 networks:
-  ewm-net:
+  ewm-network:
     driver: bridge
