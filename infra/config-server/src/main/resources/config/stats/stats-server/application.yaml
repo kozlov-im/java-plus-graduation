@@ -1,0 +1,38 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    generate-ddl: false
+    properties:
+      hibernate:
+        format_sql: true
+  sql:
+    init:
+      mode: always
+  jackson:
+    serialization:
+      write_dates_as_timestamps: false
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:6432/ewm-stats
+    username: stat
+    password: stat
+
+logging:
+  level:
+    org:
+      springframework:
+        orm:
+          jpa: INFO
+        transaction:
+          INFO: INFO
+          interceptor: TRACE
+        orm.jpa.JpaTransactionManager: DEBUG
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+server:
+  port: 9090
