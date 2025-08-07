@@ -21,7 +21,7 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "event_id")
     Long id;
-    @Column(name = "annotation")
+    @Column(name = "annotation", length = 2000)
     String annotation;
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -30,14 +30,13 @@ public class Event {
     Integer confirmedRequests;
     @Column(name = "created_on")
     LocalDateTime createdOn;
-    @Column(name = "description")
+    @Column(name = "description", length = 7000)
     String description;
     @Column(name = "event_date")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime eventDate;
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    User initiator;
+    @Column(name = "user_id")
+    Long initiator;
     @OneToOne
     @JoinColumn(name = "location_id")
     Location location;

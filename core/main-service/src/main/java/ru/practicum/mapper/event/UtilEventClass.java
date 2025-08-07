@@ -2,23 +2,25 @@ package ru.practicum.mapper.event;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import ru.practicum.dto.user.UserDto;
+
+import ru.practicum.dto.user.UserShortDto;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.NewEventDto;
 import ru.practicum.dto.event.UpdateEventAdminRequest;
+import ru.practicum.feignClient.UserServiceFeignClient;
 import ru.practicum.mapper.category.CategoryMapper;
 import ru.practicum.mapper.location.LocationMapper;
-import ru.practicum.mapper.user.UserMapper;
-import ru.practicum.mapper.user.UserShortMapper;
 import ru.practicum.model.Category;
 import ru.practicum.model.Event;
 import ru.practicum.model.Location;
-import ru.practicum.model.User;
 import ru.practicum.service.category.CategoryService;
 import ru.practicum.state.EventState;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -28,13 +30,11 @@ public class UtilEventClass {
 
     private final CategoryService categoryService;
 
-    private final UserMapper userMapper;
-
-    private final UserShortMapper userShortMapper;
-
     private final LocationMapper locationMapper;
 
-    public Event toEventFromNewEventDto(NewEventDto newEventDto, User user, CategoryDto category, Location location) {
+    private final UserServiceFeignClient userClient;
+
+    public Event toEventFromNewEventDto(NewEventDto newEventDto, UserDto user, CategoryDto category, Location location) {
         if (newEventDto == null || user == null || category == null || location == null) {
             return null;
         }
@@ -47,7 +47,7 @@ public class UtilEventClass {
         event.setCreatedOn(LocalDateTime.now().withNano(0));
         event.setDescription(newEventDto.getDescription());
         event.setEventDate(newEventDto.getEventDate());
-        event.setInitiator(user);
+        event.setInitiator(user.getId());
         event.setLocation(location);
         event.setPaid(newEventDto.getPaid());
         event.setParticipantLimit(newEventDto.getParticipantLimit());
@@ -122,6 +122,8 @@ public class UtilEventClass {
         if (event == null) {
             return null;
         }
+        UserDto userDto = userClient.getUsers(List.of(event.getInitiator()),0, 1).getFirst();
+        UserShortDto userShortDto = new UserShortDto(userDto.getId(), userDto.getName());
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -132,7 +134,7 @@ public class UtilEventClass {
         eventFullDto.setCreatedOn(event.getCreatedOn().format(formatter));
         eventFullDto.setDescription(event.getDescription());
         eventFullDto.setId(event.getId());
-        eventFullDto.setInitiator(userShortMapper.toUserShortDto(event.getInitiator()));
+        eventFullDto.setInitiator(userShortDto);
         eventFullDto.setLocation(locationMapper.toLocationDto(event.getLocation()));
         eventFullDto.setPaid(event.getPaid());
         eventFullDto.setParticipantLimit(event.getParticipantLimit());

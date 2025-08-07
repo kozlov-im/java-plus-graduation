@@ -1,4 +1,4 @@
-package ru.practicum.mapper.user;
+/*package ru.practicum.mapper.user;
 
 import org.mapstruct.Mapper;
 import ru.practicum.dto.user.UserDto;
@@ -12,3 +12,4 @@ public interface UserMapper {
 
     List<UserDto> toUserDtos(List<User> userList);
 }
+*/

@@ -1,4 +1,4 @@
-package ru.practicum.mapper.user;
+/*package ru.practicum.mapper.user;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -9,4 +9,4 @@ import ru.practicum.model.User;
 public interface NewUserMapper {
     @Mapping(target = "id", ignore = true)
     User fromNewUserRequest(NewUserRequest newUserRequest);
-}
+}*/

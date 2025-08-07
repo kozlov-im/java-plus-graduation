@@ -1,4 +1,4 @@
-package ru.practicum.dto.user;
+/*package ru.practicum.dto.user;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,3 +19,4 @@ public class UserDto {
     String name;
     String email;
 }
+*/

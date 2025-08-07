@@ -1,4 +1,4 @@
-package ru.practicum.exception;
+/*package ru.practicum.exception;
 
 import lombok.Getter;
 
@@ -11,4 +11,4 @@ public class NotFoundException extends RuntimeException {
         this.reason = reason;
     }
 
-}
+}*/

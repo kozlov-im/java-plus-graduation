@@ -1,4 +1,4 @@
-package ru.practicum.dto.user;
+/*package ru.practicum.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -29,3 +29,4 @@ public class NewUserRequest {
     @Size(min = 6, max = 254)
     String email;
 }
+*/

@@ -6,7 +6,7 @@ spring:
     password: main
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create #none
     properties:
       hibernate:
         format_sql: true

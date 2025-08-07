@@ -1,4 +1,4 @@
-package ru.practicum.repository;
+/*package ru.practicum.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,3 +26,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> getUsersByIds(@Param("from") int from, @Param("size") int size, @Param("ids") List<Long> ids);
 }
 
+*/

@@ -26,7 +26,7 @@ public class SearchEventRepository {
         List<Predicate> predicates = new ArrayList<>();
 
         if (parameters.getUsers() != null && !parameters.getUsers().isEmpty() && parameters.getUsers().get(0) != 0) {
-            predicates.add(root.get("initiator").get("id").in(parameters.getUsers()));
+            predicates.add(root.get("initiator").in(parameters.getUsers()));
         }
 
         if (parameters.getStates() != null && !parameters.getStates().isEmpty()) {

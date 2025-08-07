@@ -1,4 +1,4 @@
-package ru.practicum.service.user;
+/*package ru.practicum.service.user;
 
 import ru.practicum.dto.user.NewUserRequest;
 import ru.practicum.dto.user.UserDto;
@@ -12,3 +12,4 @@ public interface UserService {
 
     void delete(long userId);
 }
+*/

@@ -1,4 +1,4 @@
-package ru.practicum.error;
+/*package ru.practicum.error;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -25,3 +25,4 @@ public class ApiError {
     private LocalDateTime timestamp;
 
 }
+*/

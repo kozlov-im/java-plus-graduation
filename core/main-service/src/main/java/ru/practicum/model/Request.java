@@ -26,9 +26,8 @@ public class Request {
     @JoinColumn(name = "event_id")
     Event event;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "requester_id")
-    User requester;
+    @Column(name = "requester_id")
+    Long requester;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

@@ -1,4 +1,4 @@
-package ru.practicum.service.user;
+/*package ru.practicum.service.user;
 
 
 import lombok.AccessLevel;
@@ -61,3 +61,4 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(userId);
     }
 }
+*/

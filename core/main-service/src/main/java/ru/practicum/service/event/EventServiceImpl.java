@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatClient;
 import ru.practicum.dto.EndpointHitDto;
+import ru.practicum.dto.user.UserDto;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.event.EventFullDto;
@@ -23,6 +24,7 @@ import ru.practicum.enums.RequestStatus;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
+import ru.practicum.feignClient.UserServiceFeignClient;
 import ru.practicum.mapper.event.EventMapper;
 import ru.practicum.mapper.event.UtilEventClass;
 import ru.practicum.mapper.request.RequestMapper;
@@ -30,25 +32,18 @@ import ru.practicum.model.Category;
 import ru.practicum.model.Event;
 import ru.practicum.model.Location;
 import ru.practicum.model.Request;
-import ru.practicum.model.User;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.LocationRepository;
 import ru.practicum.repository.RequestRepository;
 import ru.practicum.repository.SearchEventRepository;
-import ru.practicum.repository.UserRepository;
 import ru.practicum.service.category.CategoryService;
 import ru.practicum.state.AdminStateAction;
 import ru.practicum.state.EventState;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -57,7 +52,7 @@ import java.util.stream.Collectors;
 public class EventServiceImpl implements EventService {
 
     EventRepository eventRepository;
-    UserRepository userRepository;
+    UserServiceFeignClient userClient;
     RequestRepository requestRepository;
     RequestMapper requestMapper;
     EventMapper eventMapper;
@@ -69,13 +64,13 @@ public class EventServiceImpl implements EventService {
     StatClient statClient;
 
     @Autowired
-    public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository,
+    public EventServiceImpl(EventRepository eventRepository, UserServiceFeignClient userClient,
                             RequestRepository requestRepository, RequestMapper requestMapper,
                             EventMapper eventMapper, CategoryService categoryService, UtilEventClass utilEventClass,
                             LocationRepository locationRepository, SearchEventRepository searchEventRepository,
                             CategoryRepository categoryRepository, StatClient statClient) {
         this.eventRepository = eventRepository;
-        this.userRepository = userRepository;
+        this.userClient = userClient;
         this.requestRepository = requestRepository;
         this.requestMapper = requestMapper;
         this.eventMapper = eventMapper;
@@ -89,8 +84,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<ParticipationRequestDto> getRequestByUserId(Long userId) {
-        userRepository.findById(userId);
-        List<Request> requestList = requestRepository.findAllByRequesterId(userId);
+        List<Request> requestList = requestRepository.findAllByRequester(userId);
         return requestList.stream()
                 .map(requestMapper::toParticipationRequestDto)
                 .collect(Collectors.toList());
@@ -107,8 +101,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public ParticipationRequestDto createRequest(Long userId, Long eventId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException("User with id=" + userId + " not found!", ""));
+        UserDto user = checkUser(userId);
         Event event = eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException("Event with id=" + eventId + " not found!", ""));
         requestToEventVerification(user, event);
@@ -119,7 +112,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
-        userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User with id=" + userId + " not found!", ""));
+        checkUser(userId);
         Request request = requestRepository.findById(requestId).orElseThrow(
                 () -> new NotFoundException("Object with id=" + requestId + " was not found!", "")
         );
@@ -138,18 +131,18 @@ public class EventServiceImpl implements EventService {
     }
 
 
-    private void requestToEventVerification(User user, Event event) {
+    private void requestToEventVerification(UserDto user, Event event) {
         long userId = user.getId();
 
-        if (requestRepository.findAllByRequesterId(userId).stream()
+        if (requestRepository.findAllByRequester(userId).stream()
                 .map(r -> r.getEvent().equals(event))
                 .toList().contains(true)) {
             throw new ConflictException("User with id=" + userId +
-                                        " has already made a request for participation in the event with id=" + event.getId(), "");
+                    " has already made a request for participation in the event with id=" + event.getId(), "");
         }
-        if (userId == event.getInitiator().getId() && event.getInitiator() != null) {
+        if (userId == event.getInitiator() && event.getInitiator() != null) {
             throw new ConflictException("Initiator of event with id=" + userId +
-                                        " cannot add request for participation in his own event", "");
+                    " cannot add request for participation in his own event", "");
         }
         if (event.getPublishedOn() == null) {
             throw new ConflictException("", "You cannot participate in an unpublished event id=" + event.getId());
@@ -176,7 +169,7 @@ public class EventServiceImpl implements EventService {
             Event event = request.getEvent();
             if (count >= event.getParticipantLimit()) {
                 throw new ConflictException("The event with id=" + event.getId() +
-                                            " has reached the limit of participation requests", "");
+                        " has reached the limit of participation requests", "");
             }
             if (request.getEvent().getId().equals(eventId)) {
                 request.setStatus(status);
@@ -203,18 +196,17 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public List<EventShortDto> getEventsForUser(Long userId, Integer from, Integer size) {
-        List<Event> events = eventRepository.findByInitiatorId(userId, PageRequest.of(from, size));
+        List<Event> events = eventRepository.findByInitiator(userId, PageRequest.of(from, size));
 
         return events.stream()
-                .map(eventMapper::toEventShortDto)
+                .map(event -> eventMapper.toEventShortDto(event, userClient))
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
     public EventFullDto createEvent(Long userId, NewEventDto eventDto) {
-        User initializer = userRepository.findById(userId).orElseThrow(() ->
-                new NotFoundException("User with id=" + userId + " not found!", ""));
+        UserDto initializer = checkUser(userId);
         CategoryDto category = categoryService.getCategoryById(eventDto.getCategory());
         Location location = eventDto.getLocation();
         locationRepository.save(location);
@@ -323,7 +315,7 @@ public class EventServiceImpl implements EventService {
 
         // Если все параметры отсутствуют, то возвращаем пустой список и записываем статистику
         if (Boolean.TRUE.equals(text == null && categories == null && paid == null && rangeStart == null && rangeEnd == null
-                                && !onlyAvailable && sort == null && from == 0) && size == 10) {
+                && !onlyAvailable && sort == null && from == 0) && size == 10) {
 
             log.info("==> Статистика: вызов метода getEvents с пустыми параметрами от клиента {}", clientIp);
 
@@ -406,7 +398,7 @@ public class EventServiceImpl implements EventService {
         List<Event> paginatedEvents = filteredEvents.subList(start, end);
 
         return paginatedEvents.stream()
-                .map(eventMapper::toEventShortDto)
+                .map(event -> eventMapper.toEventShortDto(event, userClient))
                 .toList();
     }
 
@@ -524,6 +516,13 @@ public class EventServiceImpl implements EventService {
         if (checkingTime != null && checkingTime.isBefore(LocalDateTime.now().plusHours(plusHour))) {
             throw new ValidationException("updated time should be " + plusHour + "ahead then current time!", "not enough time before event");
         }
+    }
+
+    private UserDto checkUser(Long userId) {
+        Optional<List<UserDto>> optionalUserDto = Optional.ofNullable(userClient.getUsers(List.of(userId), 0, 1));
+        List<UserDto> userDtos = optionalUserDto.filter(userDto -> !userDto.isEmpty()).orElseThrow(
+                () -> new NotFoundException("User with id=" + userId + " not found!", ""));
+        return userDtos.getFirst(); //new User(userId, userDtos.getFirst().getName(), userDtos.getFirst().getEmail());
     }
 
 

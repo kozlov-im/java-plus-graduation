@@ -1,4 +1,4 @@
-package ru.practicum.dto.user;
+/*package ru.practicum.dto.user;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -18,3 +18,4 @@ public class UserShortDto {
     Long id;
     String name;
 }
+*/

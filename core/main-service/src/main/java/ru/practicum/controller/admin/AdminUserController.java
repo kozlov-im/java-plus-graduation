@@ -1,4 +1,4 @@
-package ru.practicum.controller.admin;
+/*package ru.practicum.controller.admin;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -56,3 +56,4 @@ public class AdminUserController {
         userService.delete(userId);
     }
 }
+*/

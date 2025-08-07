@@ -1,4 +1,4 @@
-package ru.practicum.exception;
+/*package ru.practicum.exception;
 
 import lombok.Getter;
 
@@ -12,4 +12,4 @@ public class ConflictException extends RuntimeException {
         this.reason = reason;
     }
 
-}
+}*/
