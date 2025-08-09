@@ -92,7 +92,7 @@ services:
     build: core/main-service
     container_name: ewm-server
     depends_on:
-      ewm-db:
+      ewm-event-db:
         condition: service_healthy
       stats-server:
         condition: service_healthy
@@ -108,17 +108,17 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
       - SERVER_PORT=8081
 
-  ewm-db:
+  ewm-event-db:
     image: postgres:16.1
-    container_name: postgres-ewm-main-db
+    container_name: postgres-ewm-event-db
     ports:
       - "7432:5432"
     networks:
       - ewm-network
     environment:
-      - POSTGRES_DB=ewm-main
-      - POSTGRES_USER=main
-      - POSTGRES_PASSWORD=main
+      - POSTGRES_DB=ewm-event-db
+      - POSTGRES_USER=event
+      - POSTGRES_PASSWORD=event
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
@@ -136,6 +136,23 @@ services:
       - POSTGRES_DB=ewm-user-db
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=user
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  ewm-request-db:
+    image: postgres:16.1
+    container_name: postgres-ewm-request-db
+    ports:
+      - "9432:5432"
+    networks:
+      - ewm-network
+    environment:
+      - POSTGRES_DB=ewm-request-db
+      - POSTGRES_USER=request
+      - POSTGRES_PASSWORD=request
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s

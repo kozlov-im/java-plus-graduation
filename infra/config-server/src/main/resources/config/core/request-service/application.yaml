@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:9432/ewm-request-db
+    driverClassName: org.postgresql.Driver
+    username: request
+    password: request
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: create #update #none
+    properties:
+      hibernate:
+        format_sql: true
+  application:
+    name: request-service
+
+server:
+  port: 0
