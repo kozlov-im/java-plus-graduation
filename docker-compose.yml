@@ -159,6 +159,24 @@ services:
       interval: 5s
       retries: 10
 
+  ewm-comment-db:
+    image: postgres:16.1
+    container_name: postgres-ewm-comment-db
+    ports:
+      - "10432:5432"
+    networks:
+      - ewm-network
+    environment:
+      - POSTGRES_DB=ewm-comment-db
+      - POSTGRES_USER=comment
+      - POSTGRES_PASSWORD=comment
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+
 networks:
   ewm-network:
     driver: bridge

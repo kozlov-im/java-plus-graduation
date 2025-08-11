@@ -16,8 +16,14 @@ spring:
             - Path=/users/{user-id}/requests/**,/users/{user-id}/events/{event-id}/requests/**,/users/requests/**
           order: 2
 
+        - id: comment_service_route
+          uri: lb://comment-service
+          predicates:
+            - Path=/admin/comment/**,/comment/**
+          order: 3
+
         - id: event_service_route
           uri: lb://event-service
           predicates:
             - Path=/**
-          order: 3
+          order: 4

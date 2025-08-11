@@ -38,6 +38,7 @@ public interface EventMapper {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return dateTime.format(formatter);
     }
+
     @Named("userShortDtoToLong")
     default Long userShortDtoToLong(UserShortDto userShortDto) {
         if (userShortDto == null) {
