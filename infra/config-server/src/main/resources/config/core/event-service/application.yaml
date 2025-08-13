@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: event-service
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:7432/ewm-event-db
+    username: event
+    password: event
+  jpa:
+    hibernate:
+      ddl-auto: create #none
+    properties:
+      hibernate:
+        format_sql: true
+  sql:
+    init:
+      mode: always
+
+logging:
+  level:
+    org:
+      springframework:
+        transaction:
+          INFO: INFO
+          interceptor: TRACE
+        orm:
+          jpa:
+            INFO: INFO
+            JpaTransactionManager: DEBUG
+        web: DEBUG
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+    org.springframework.web.client.RestTemplate: DEBUG
+
+server:
+  port: 0
+
+client:
+  url: http://localhost:9090

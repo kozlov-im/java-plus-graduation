@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:10432/ewm-comment-db
+    driverClassName: org.postgresql.Driver
+    username: comment
+    password: comment
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: create #update #none
+    properties:
+      hibernate:
+        format_sql: true
+  application:
+    name: comment-service
+
+server:
+  port: 0
