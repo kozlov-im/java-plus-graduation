@@ -75,4 +75,10 @@ public class PublicEventController implements EventServiceFeignClient {
         eventService.setConfirmedRequests(eventId, count);
     }
 
+    @GetMapping("/test")
+    public String test(@RequestParam Long userId, Integer maxResults) {
+        return eventService.getTest(userId, maxResults);
+    }
+
+
 }

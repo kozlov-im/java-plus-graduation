@@ -32,5 +32,7 @@ public interface EventService {
     EventInitiatorDto getEventWithInitiatorId(Long eventId);
 
     void setConfirmedRequests(Long eventId, Integer count);
+
+    String getTest(Long userId, Integer maxResults);
 }
 

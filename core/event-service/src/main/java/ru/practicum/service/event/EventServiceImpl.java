@@ -7,14 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.AnalyzerGrpcClient;
 import ru.practicum.StatClient;
 import ru.practicum.dto.EndpointHitDto;
+import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.dto.event.*;
 import ru.practicum.dto.user.UserDto;
-import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.enums.EventState;
 import ru.practicum.enums.RequestStatus;
+import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
@@ -52,13 +54,15 @@ public class EventServiceImpl implements EventService {
     SearchEventRepository searchEventRepository;
     CategoryRepository categoryRepository;
     StatClient statClient;
+    AnalyzerGrpcClient analyzerGrpcClient;
+
 
     @Autowired
     public EventServiceImpl(EventRepository eventRepository, UserServiceFeignClient userClient,
                             RequestServiceFeignClient requestClient,
                             EventMapper eventMapper, CategoryService categoryService, UtilEventClass utilEventClass,
                             LocationRepository locationRepository, SearchEventRepository searchEventRepository,
-                            CategoryRepository categoryRepository, StatClient statClient) {
+                            CategoryRepository categoryRepository, StatClient statClient, AnalyzerGrpcClient analyzerGrpcClient) {
         this.eventRepository = eventRepository;
         this.userClient = userClient;
         this.requestClient = requestClient;
@@ -69,6 +73,7 @@ public class EventServiceImpl implements EventService {
         this.searchEventRepository = searchEventRepository;
         this.categoryRepository = categoryRepository;
         this.statClient = statClient;
+        this.analyzerGrpcClient = analyzerGrpcClient;
     }
 
     @Override
@@ -420,6 +425,15 @@ public class EventServiceImpl implements EventService {
         List<UserDto> userDtos = optionalUserDto.filter(userDto -> !userDto.isEmpty()).orElseThrow(
                 () -> new NotFoundException("User with id=" + userId + " not found!", ""));
         return userDtos.getFirst();
+    }
+
+    @Override
+    public String getTest(Long userId, Integer maxResults) {
+        List<RecommendedEventProto> recommendedEventProtoList = analyzerGrpcClient.getRecommendationsForUser(userId, maxResults);
+        System.out.println("-----------------");
+        System.out.println(recommendedEventProtoList);
+        System.out.println("-----------------");
+        return "EventService recommendedEventProtoList";
     }
 
 

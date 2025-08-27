@@ -7,9 +7,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.stats.avro.ActionTypeAvro;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
-import ru.practicum.ewm.stats.proto.ActionTypeProto;
-import ru.practicum.ewm.stats.proto.UserActionProto;
 import ru.practicum.kafka.KafkaClient;
+import ru.practicum.stats.user_action.ActionTypeProto;
+import ru.practicum.stats.user_action.UserActionProto;
 
 import java.time.Instant;
 

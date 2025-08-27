@@ -55,21 +55,25 @@ public class AggregationStarter {
 
                 for (ConsumerRecord<String, UserActionAvro> record : records) {
                     log.info("userActionAvro was received {}", record);
-                    Optional<EventSimilarityAvro> eventSimilarityAvroOptional = recordHandler.handle(record.value());
-                    System.out.println(eventSimilarityAvroOptional);
-                    if (eventSimilarityAvroOptional.isPresent()) {
-                        EventSimilarityAvro eventSimilarityAvro = eventSimilarityAvroOptional.get();
+                    Optional<List<EventSimilarityAvro>> eventSimilarityAvroOptionalList = recordHandler.handle(record.value());
+                    if (eventSimilarityAvroOptionalList.isPresent()) {
+                        List<EventSimilarityAvro> eventSimilarityAvroList = eventSimilarityAvroOptionalList.get();
 
-                        ProducerRecord<String, SpecificRecordBase> producerRecord =
-                                new ProducerRecord<>(
-                                        similarityTopic,
-                                        null,
-                                        eventSimilarityAvro.getTimestamp().toEpochMilli(),
-                                        null,
-                                        eventSimilarityAvro);
-                        producer.send(producerRecord);
-                        log.info("Into {} send eventSimilarity A = {} and B = {}",
-                                similarityTopic, eventSimilarityAvro.getEventA(), eventSimilarityAvro.getEventB());
+                        for (EventSimilarityAvro eventSimilarityAvro : eventSimilarityAvroList) {
+
+                            ProducerRecord<String, SpecificRecordBase> producerRecord =
+                                    new ProducerRecord<>(
+                                            similarityTopic,
+                                            null,
+                                            eventSimilarityAvro.getTimestamp().toEpochMilli(),
+                                            null,
+                                            eventSimilarityAvro);
+                            producer.send(producerRecord);
+
+                            log.info("Into {} send eventSimilarity A = {} and B = {} eventSimilarityAvro {}",
+                                    similarityTopic, eventSimilarityAvro.getEventA(), eventSimilarityAvro.getEventB(),
+                                    eventSimilarityAvro);
+                        }
                     }
                     manageOffsets(record, count, consumer);
                     count++;

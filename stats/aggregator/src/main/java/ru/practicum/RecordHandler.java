@@ -22,7 +22,7 @@ public class RecordHandler {
     private final Map<Long, Double> eventWeightSums = new HashMap<>();
     private final Map<Long, Map<Long, Double>> minWeightsSums = new HashMap<>();
 
-    public Optional<EventSimilarityAvro> handle(UserActionAvro userActionAvro) {
+    public Optional<List<EventSimilarityAvro>> handle(UserActionAvro userActionAvro) {
 
         long eventId = userActionAvro.getEventId();
         long userId = userActionAvro.getUserId();
@@ -35,7 +35,7 @@ public class RecordHandler {
         return Optional.ofNullable(updateWeighs(eventId, userId, weight, userActionAvro.getTimestamp()));
     }
 
-    private EventSimilarityAvro updateWeighs(long eventId, long userId, double weight, Instant timestamp) {
+    private List<EventSimilarityAvro> updateWeighs(long eventId, long userId, double weight, Instant timestamp) {
 
         Map<Long, Double> userWeights = eventUsersWeigths.computeIfAbsent(eventId, e -> new HashMap<>());
 
@@ -56,7 +56,8 @@ public class RecordHandler {
         return null;
     }
 
-    private EventSimilarityAvro calculateSimilarity(long eventA, long userId, Instant timestamp, double previousWeight) {
+    private List<EventSimilarityAvro> calculateSimilarity(long eventA, long userId, Instant timestamp, double previousWeight) {
+        List<EventSimilarityAvro> eventSimilarityAvroList = new ArrayList<>();
         for (long eventB : eventWeightSums.keySet()) {
 
             double sMin;
@@ -68,6 +69,12 @@ public class RecordHandler {
             long secondEvent = Math.max(eventA, eventB);
             //System.out.println("secondEvent " + secondEvent);
 
+            if ((eventUsersWeigths.get(firstEvent).get(userId) == null ||
+                    eventUsersWeigths.get(firstEvent).get(userId).equals(0.0)) ||
+                    (eventUsersWeigths.get(secondEvent).get(userId) == null ||
+                            eventUsersWeigths.get(secondEvent).get(userId).equals(0.0))) {
+                continue;
+            }
             if (minWeightsSums.getOrDefault(firstEvent, new HashMap<>()).getOrDefault(secondEvent, -1.0) == -1.0) {
                 Map<Long, Double> event1UsersWeights = eventUsersWeigths.get(firstEvent);
                 Map<Long, Double> event2UsersWeights = eventUsersWeigths.get(secondEvent);
@@ -119,13 +126,16 @@ public class RecordHandler {
 
             //System.out.println("similarity " + similarity);
 
-            return EventSimilarityAvro.newBuilder()
+            EventSimilarityAvro eventSimilarityAvro = EventSimilarityAvro.newBuilder()
                     .setEventA(firstEvent)
                     .setEventB(secondEvent)
                     .setScore(similarity)
                     .setTimestamp(timestamp)
                     .build();
+            eventSimilarityAvroList.add(eventSimilarityAvro);
+
         }
-        return null;
+        //System.out.println("eventSimilarityAvroList " + eventSimilarityAvroList);
+        return eventSimilarityAvroList;
     }
 }
