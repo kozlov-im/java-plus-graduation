@@ -12,13 +12,12 @@ import java.time.Instant;
 @ToString
 @Table(name = "user_actions")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@IdClass(ActionId.class)
 public class UserAction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-
     Long userId;
+    @Id
     Long eventId;
 
     @Column(name = "action_type")

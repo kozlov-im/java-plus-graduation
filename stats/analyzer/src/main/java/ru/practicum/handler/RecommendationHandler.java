@@ -85,7 +85,7 @@ public class RecommendationHandler {
     public List<RecommendedEventProto> handle(InteractionsCountRequestProto requestProto) {
         List<RecommendedEventProto> recommendedEventProtoList = new ArrayList<>();
         for (long eventId : requestProto.getEventIdList()) {
-            double weightSum = userActionRepository.findByUserId(eventId)
+            double weightSum = userActionRepository.findByEventId(eventId)
                     .stream().mapToDouble(UserAction::getWeight).sum();
             RecommendedEventProto recommendedEventProto = RecommendedEventProto.newBuilder()
                     .setEventId(eventId)

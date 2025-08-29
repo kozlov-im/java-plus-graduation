@@ -35,8 +35,8 @@ public class EventSimilarityProcessor implements Runnable {
 
                 for (ConsumerRecord<String, EventSimilarityAvro> record : records) {
                     EventSimilarityAvro eventSimilarityAvro = record.value();
-                    eventSimilarityHandle.handle(eventSimilarityAvro);
                     log.info("Analyzer got eventSimilarity from {} {}", topicsConfig.getSimilarityTopic(), eventSimilarityAvro);
+                    eventSimilarityHandle.handle(eventSimilarityAvro);
                 }
                 consumer.commitSync();
             }

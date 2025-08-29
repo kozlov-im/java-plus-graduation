@@ -11,11 +11,11 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 import ru.practicum.kafka.KafkaClient;
+import ru.practicum.kafka.TopicsConfig;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -25,17 +25,13 @@ import java.util.Optional;
 
 @Component
 @Slf4j
-@ConfigurationProperties("topics")
 @Data
 public class AggregationStarter {
 
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
     private final RecordHandler recordHandler;
     private final KafkaClient kafkaClient;
-
-    private String userActionsTopic;
-    private String similarityTopic;
-    private int consumerAttemptTimeout;
+    private final TopicsConfig topicsConfig;
 
     public void start() {
 
@@ -43,10 +39,10 @@ public class AggregationStarter {
         Producer<String, SpecificRecordBase> producer = kafkaClient.getProducer();
 
         try {
-            consumer.subscribe(List.of(userActionsTopic));
+            consumer.subscribe(List.of(topicsConfig.getUserActionsTopic()));
 
             while (true) {
-                ConsumerRecords<String, UserActionAvro> records = consumer.poll(Duration.ofMillis(consumerAttemptTimeout));
+                ConsumerRecords<String, UserActionAvro> records = consumer.poll(Duration.ofMillis(topicsConfig.getConsumerAttemptTimeout()));
                 int count = 0;
 
                 if (records.isEmpty()) {
@@ -63,7 +59,7 @@ public class AggregationStarter {
 
                             ProducerRecord<String, SpecificRecordBase> producerRecord =
                                     new ProducerRecord<>(
-                                            similarityTopic,
+                                            topicsConfig.getSimilarityTopic(),
                                             null,
                                             eventSimilarityAvro.getTimestamp().toEpochMilli(),
                                             null,
@@ -71,7 +67,7 @@ public class AggregationStarter {
                             producer.send(producerRecord);
 
                             log.info("Into {} send eventSimilarity A = {} and B = {} eventSimilarityAvro {}",
-                                    similarityTopic, eventSimilarityAvro.getEventA(), eventSimilarityAvro.getEventB(),
+                                    topicsConfig.getSimilarityTopic(), eventSimilarityAvro.getEventA(), eventSimilarityAvro.getEventB(),
                                     eventSimilarityAvro);
                         }
                     }

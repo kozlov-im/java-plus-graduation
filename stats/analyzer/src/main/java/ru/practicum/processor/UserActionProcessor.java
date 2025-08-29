@@ -35,8 +35,8 @@ public class UserActionProcessor implements Runnable {
 
                 for (ConsumerRecord<String, UserActionAvro> record : records) {
                     UserActionAvro userActionAvro = record.value();
-                    userActionHandler.handle(userActionAvro);
                     log.info("Analyzer got userAction from {} {}", topicsConfig.getUserActionsTopic(), userActionAvro);
+                    userActionHandler.handle(userActionAvro);
                 }
                 consumer.commitSync();
             }

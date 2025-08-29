@@ -27,12 +27,16 @@ public interface EventService {
                                   LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                   Boolean onlyAvailable, String sort, int from, int size, String clientIp);
 
-    EventFullDto getEventById(Long id, String clientIp);
+    EventFullDto getEventById(Long userId, Long eventId);
 
     EventInitiatorDto getEventWithInitiatorId(Long eventId);
 
     void setConfirmedRequests(Long eventId, Integer count);
 
-    String getTest(Long userId, Integer maxResults);
+    List<EventShortDto> getRecommendations(Long userId, Integer maxResults);
+
+    void setLikeEvent(Long userId, Long eventId);
+
+    void getInteractionsCount(List<Long> eventIds);
 }
 

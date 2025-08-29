@@ -8,7 +8,7 @@ spring:
     password: event
   jpa:
     hibernate:
-      ddl-auto: create #none
+      ddl-auto: update #create #none
     properties:
       hibernate:
         format_sql: true
@@ -39,8 +39,8 @@ logging:
 server:
   port: 0
 
-client:
-  url: http://localhost:9090
+#client:
+#  url: http://localhost:9090
 
 grpc:
   client:

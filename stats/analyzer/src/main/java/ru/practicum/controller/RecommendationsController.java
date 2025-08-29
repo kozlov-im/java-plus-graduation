@@ -24,6 +24,7 @@ public class RecommendationsController extends RecommendationsControllerGrpc.Rec
         try {
             log.info("request for user recommendation {}", requestProto);
             List<RecommendedEventProto> recommendations = recommendationHandler.handle(requestProto);
+            log.info("getRecommendationsForUser request {}", recommendations);
             recommendations.forEach(responseObserver::onNext);
             responseObserver.onCompleted();
         } catch (Exception e) {
@@ -41,6 +42,7 @@ public class RecommendationsController extends RecommendationsControllerGrpc.Rec
         try {
             log.info("request for similar events {}", requestProto);
             List<RecommendedEventProto> recommendations = recommendationHandler.handle(requestProto);
+            log.info("getSimilarEvent request {}", recommendations);
             recommendations.forEach(responseObserver::onNext);
             responseObserver.onCompleted();
         } catch (Exception e) {
@@ -56,8 +58,9 @@ public class RecommendationsController extends RecommendationsControllerGrpc.Rec
     public void getInteractionsCount(InteractionsCountRequestProto requestProto,
                                      StreamObserver<RecommendedEventProto> responseObserver) {
         try {
-            log.info("request for interactions count {}", requestProto);
+            log.info("request for interactions count for {}", requestProto);
             List<RecommendedEventProto> recommendations = recommendationHandler.handle(requestProto);
+            log.info("getInteractionsCount request {}", recommendations);
             recommendations.forEach(responseObserver::onNext);
             responseObserver.onCompleted();
         } catch (Exception e) {
