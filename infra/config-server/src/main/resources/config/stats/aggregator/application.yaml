@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: aggregator
+
+aggregator:
+  kafka:
+    bootstrap-server: localhost:9092
+    customer-client-id: aggregatorConsumer
+    customer-group-id: action.aggregation
+
+topics:
+  user-actions-topic: stats.user-actions.v1
+  similarity-topic: stats.events-similarity.v1
+  consumer-attempt-timeout: 100
+
+server:
+  port: 0
