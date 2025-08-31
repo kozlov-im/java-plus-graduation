@@ -1,6 +1,6 @@
 package ru.practicum;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -25,7 +25,7 @@ import java.util.Optional;
 
 @Component
 @Slf4j
-@Data
+@AllArgsConstructor
 public class AggregationStarter {
 
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
@@ -37,6 +37,11 @@ public class AggregationStarter {
 
         Consumer<String, UserActionAvro> consumer = kafkaClient.getConsumer();
         Producer<String, SpecificRecordBase> producer = kafkaClient.getProducer();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("Сработал хук на завершение JVM. Прерываю работу консьюмера.");
+            consumer.wakeup(); // инициируем прерывание блокировки poll()
+        }));
 
         try {
             consumer.subscribe(List.of(topicsConfig.getUserActionsTopic()));

@@ -1,6 +1,9 @@
 package ru.practicum.handler;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -15,7 +18,8 @@ import java.time.Instant;
 
 @Component
 @ConfigurationProperties("topics")
-@Data
+@RequiredArgsConstructor
+@Setter
 @Slf4j
 public class UserActionHandler {
     private final KafkaClient kafkaClient;

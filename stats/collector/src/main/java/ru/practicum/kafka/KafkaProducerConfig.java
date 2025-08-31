@@ -1,6 +1,7 @@
 package ru.practicum.kafka;
 
-import lombok.Data;
+import jakarta.annotation.PreDestroy;
+import lombok.*;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -15,8 +16,8 @@ import java.time.Duration;
 import java.util.Properties;
 
 @Configuration
-@Data
 @ConfigurationProperties("collector.kafka")
+@Setter
 public class KafkaProducerConfig {
 
     private String bootstrapServer;
@@ -51,6 +52,11 @@ public class KafkaProducerConfig {
                     producer.close(Duration.ofSeconds(10));
                 }
 
+            }
+
+            @PreDestroy
+            public void cleanUp() {
+                stop();
             }
         };
     }

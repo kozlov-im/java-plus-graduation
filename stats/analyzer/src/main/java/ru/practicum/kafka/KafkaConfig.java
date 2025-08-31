@@ -1,6 +1,7 @@
 package ru.practicum.kafka;
 
-import lombok.Data;
+import jakarta.annotation.PreDestroy;
+import lombok.Setter;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -13,11 +14,12 @@ import ru.practicum.ewm.stats.avro.UserActionAvro;
 import ru.practicum.kafka.deserializer.EventSimilarityDeserialyzer;
 import ru.practicum.kafka.deserializer.UserActionDeserializer;
 
+import java.time.Duration;
 import java.util.Properties;
 
 @Configuration
 @ConfigurationProperties("analyzer.kafka")
-@Data
+@Setter
 public class KafkaConfig {
 
     private String bootstrapServer;
@@ -69,6 +71,24 @@ public class KafkaConfig {
                 properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, EventSimilarityDeserialyzer.class);
                 eventSimilarityConsumer = new KafkaConsumer<>(properties);
             }
+
+            @Override
+            public void stop() {
+                if (userActionConsumer != null) {
+                    userActionConsumer.wakeup();
+                    userActionConsumer.close(Duration.ofSeconds(10));
+                }
+                if (eventSimilarityConsumer != null) {
+                    eventSimilarityConsumer.wakeup();
+                    eventSimilarityConsumer.close(Duration.ofSeconds(10));
+                }
+            }
+
+            @PreDestroy
+            public void cleanUp() {
+                stop();
+            }
+
         };
     }
 }

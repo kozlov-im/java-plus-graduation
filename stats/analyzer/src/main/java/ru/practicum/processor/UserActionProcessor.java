@@ -24,9 +24,8 @@ public class UserActionProcessor implements Runnable {
 
     @Override
     public void run() {
-        Consumer<String, UserActionAvro> consumer = kafkaClient.getUserActionConsumer();
 
-        try (consumer) {
+        try (Consumer<String, UserActionAvro> consumer = kafkaClient.getUserActionConsumer();) {
             Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
             consumer.subscribe(List.of(topicsConfig.getUserActionsTopic()));
 

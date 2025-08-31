@@ -1,6 +1,9 @@
 package ru.practicum.kafka;
 
-import lombok.Data;
+import jakarta.annotation.PreDestroy;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -17,11 +20,12 @@ import ru.practicum.ewm.stats.avro.UserActionAvro;
 import ru.practicum.kafka.serializer.GeneralAvroSerializer;
 import ru.practicum.kafka.deserializer.UserActionDeserializer;
 
+import java.time.Duration;
 import java.util.Properties;
 
 @Configuration
 @ConfigurationProperties("aggregator.kafka")
-@Data
+@Setter
 public class KafkaConfig {
 
     private String bootstrapServer;
@@ -67,6 +71,24 @@ public class KafkaConfig {
                 properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
                 properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, UserActionDeserializer.class);
                 consumer = new KafkaConsumer<>(properties);
+            }
+
+            @Override
+            public void stop() {
+                if (producer != null) {
+                    producer.flush();
+                    producer.close(Duration.ofSeconds(10));
+                }
+                if (consumer != null) {
+                    consumer.wakeup();
+                    consumer.close(Duration.ofSeconds(10));
+                }
+
+            }
+
+            @PreDestroy
+            public void cleanUp() {
+                stop();
             }
         };
     }
