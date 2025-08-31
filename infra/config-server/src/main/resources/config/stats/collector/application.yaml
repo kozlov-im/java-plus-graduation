@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: collector
+
+grpc:
+  server:
+    port: 8085
+
+collector:
+  kafka:
+    bootstrap-server: localhost:9092
+
+topics:
+  user-actions-topic: stats.user-actions.v1
+  consumer-attempt-timeout: 100

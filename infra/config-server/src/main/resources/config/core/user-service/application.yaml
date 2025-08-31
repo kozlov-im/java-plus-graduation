@@ -9,7 +9,7 @@ spring:
       mode: always
   jpa:
     hibernate:
-      ddl-auto: create #update #none
+      ddl-auto: update #create #none
     properties:
       hibernate:
         format_sql: true

@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.practicum.dto.ParticipationRequestDto;
+import ru.practicum.dto.request.ParticipationRequestDto;
 import ru.practicum.dto.event.EventInitiatorDto;
 import ru.practicum.dto.user.UserDto;
 import ru.practicum.enums.RequestStatus;
@@ -21,7 +21,6 @@ import java.util.Optional;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RequestMapper {
 
-    //EventRepository eventRepository;
     UserServiceFeignClient userClient;
     EventServiceFeignClient eventClient;
 
@@ -50,7 +49,6 @@ public class RequestMapper {
         EventInitiatorDto eventInitiatorDto = optionalEventInitiatorDto.orElseThrow(() -> new NotFoundException("Event not found", ""));
         return new Request(
                 null,
-                //eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found", "")),
                 eventInitiatorDto.getInitiatorId(),
                 userDtos.getFirst().getId(),
                 participationRequestDto.getStatus(),
@@ -64,7 +62,6 @@ public class RequestMapper {
         }
 
         Request request = new Request();
-        //request.setEvent(event);
         request.setEventId(event.getId());
         request.setRequester(user.getId());
         request.setStatus(setStatus(event));

@@ -1,0 +1,40 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:6432/ewm-stats
+    driverClassName: org.postgresql.Driver
+    username: stat
+    password: stat
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: create #update #none
+    properties:
+      hibernate:
+        format_sql: true
+  application:
+    name: analyzer
+
+analyzer:
+  kafka:
+    bootstrap-server: localhost:9092
+    user-action-customer-client-id: actionAnalyzerConsumer
+    user-action-customer-group-id: action.analyzing
+    similarity-consumer-client-id: similarityAnalyzerConsumer
+    similarity-consumer-group-id: similarity.analyzing
+
+topics:
+  user-actions-topic: stats.user-actions.v1
+  similarity-topic: stats.events-similarity.v1
+  consumer-attempt-timeout: 100
+
+server:
+  port: 0
+#grpc:
+#  client:
+#    hub-router:
+#      address: static://localhost:59090
+#      enableKeepAlive: true
+#      keepAliveWithoutCalls: true
+#      negotiationType: plaintext

@@ -21,9 +21,6 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    //@ManyToOne(fetch = FetchType.EAGER)
-    //@JoinColumn(name = "event_id")
-    //Event event;
     Long eventId;
 
     @Column(name = "requester_id")

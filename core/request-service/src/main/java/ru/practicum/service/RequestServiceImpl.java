@@ -3,9 +3,10 @@ package ru.practicum.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.CollectorGrpcClient;
 import ru.practicum.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.dto.EventRequestStatusUpdateResult;
-import ru.practicum.dto.ParticipationRequestDto;
+import ru.practicum.dto.request.ParticipationRequestDto;
 import ru.practicum.dto.event.EventInitiatorDto;
 import ru.practicum.dto.user.UserDto;
 import ru.practicum.enums.RequestStatus;
@@ -30,6 +31,7 @@ public class RequestServiceImpl implements RequestService {
     private final RequestMapper requestMapper;
     private final UserServiceFeignClient userClient;
     private final EventServiceFeignClient eventClient;
+    private final CollectorGrpcClient collectorGrpcClient;
 
     @Override
     public List<ParticipationRequestDto> getRequestByUserId(Long userId) {
@@ -51,6 +53,7 @@ public class RequestServiceImpl implements RequestService {
         requestToEventVerification(userDto, eventInitiatorDto);
         Request request = requestMapper.formUserAndEventToRequest(userDto, eventInitiatorDto);
         requestRepository.save(request);
+        collectorGrpcClient.sendEventRegistration(userId, eventId);
         return requestMapper.toParticipationRequestDto(request);
     }
 
@@ -131,7 +134,6 @@ public class RequestServiceImpl implements RequestService {
             }
             int count = requestRepository.countByStatusAndEventId(RequestStatus.CONFIRMED, eventId);
 
-            //Event event = request.getEvent();
             EventInitiatorDto event = eventClient.getEventWithInitiatorId(request.getEventId());
 
             if (count >= event.getParticipantLimit()) {
@@ -153,11 +155,7 @@ public class RequestServiceImpl implements RequestService {
         result.setRejectedRequests(rejectedRequests);
 
         Integer count = requestRepository.countByStatusAndEventId(RequestStatus.CONFIRMED, eventId);
-        //Event event = eventRepository.getReferenceById(eventId);
         eventClient.setConfirmedRequests(eventId, count);
-        //event.setConfirmedRequests(count);
-        //eventRepository.save(event);
-
         return result;
     }
 

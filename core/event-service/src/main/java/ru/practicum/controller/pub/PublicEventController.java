@@ -53,14 +53,11 @@ public class PublicEventController implements EventServiceFeignClient {
     }
 
     @GetMapping("/{event-id}")
-    public EventFullDto getEventById(@PathVariable("event-id") Long eventId, HttpServletRequest request) {
+    public EventFullDto getEventById(@RequestHeader("X-EWM-USER-ID") Long userId, @PathVariable("event-id") Long eventId/*, HttpServletRequest request*/) {
         log.info("Получение информации о событии с id={}", eventId);
 
-        // Получение IP клиента
-        String clientIp = request.getRemoteAddr();
-
         // Получение события через сервис
-        return eventService.getEventById(eventId, clientIp);
+        return eventService.getEventById(userId, eventId);
     }
 
     @Override
@@ -74,5 +71,21 @@ public class PublicEventController implements EventServiceFeignClient {
         log.info("Устанавливаем подтвержденные запросы для события id={} ", eventId);
         eventService.setConfirmedRequests(eventId, count);
     }
+
+    @GetMapping("/recommendations")
+    public List<EventShortDto> getRecommendations(@RequestHeader("X-EWM-USER-ID") Long userId, @RequestParam Integer maxResults) {
+        return eventService.getRecommendations(userId, maxResults);
+    }
+
+    @PutMapping("/{eventId}/like")
+    public void setLikeEvent(@RequestHeader("X-EWM-USER-ID") Long userId, @PathVariable Long eventId) {
+        eventService.setLikeEvent(userId, eventId);
+    }
+
+    @GetMapping("/interactionsCount")
+    public void getInteractionsCount(@RequestParam List<Long> eventIds) {
+        eventService.getInteractionsCount(eventIds);
+    }
+
 
 }
